@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
@@ -27,6 +28,7 @@ export async function GET(request: NextRequest) {
             orderBy: {
                 startTime: 'desc',
             },
+            take: 100,
         })
 
         return NextResponse.json(timeEntries)
@@ -49,6 +51,17 @@ export async function POST(request: NextRequest) {
         const startTime = new Date(validatedData.startTime)
         const endTime = validatedData.endTime ? new Date(validatedData.endTime) : null
         const duration = endTime ? calculateDuration(startTime, endTime) : null
+
+        // If no end time, this is a "Start Timer" request.
+        // Check if there is already an active timer.
+        if (!endTime) {
+            const activeEntry = await prisma.timeEntry.findFirst({
+                where: { userId: session.user.id, endTime: null },
+            })
+            if (activeEntry) {
+                return NextResponse.json({ error: 'A timer is already running. Please stop it first.' }, { status: 400 })
+            }
+        }
 
         const timeEntry = await prisma.timeEntry.create({
             data: {

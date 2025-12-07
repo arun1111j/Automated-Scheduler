@@ -6,38 +6,15 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
-enum TaskPriority {
-  LOW
-  MEDIUM
-  HIGH
-  URGENT
-}
-
-enum TaskStatus {
-  TODO
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
-}
-
-enum RecurrenceType {
-  DAILY
-  WEEKLY
-  MONTHLY
-  YEARLY
-}
-
-enum NotificationType {
-  TASK_DUE
-  EVENT_REMINDER
-  TASK_ASSIGNED
-  TASK_COMPLETED
-  GENERAL
-}
+// SQLite doesn't support enums, using String instead
+// Valid values for TaskPriority: LOW, MEDIUM, HIGH, URGENT
+// Valid values for TaskStatus: TODO, IN_PROGRESS, COMPLETED, CANCELLED
+// Valid values for RecurrenceType: DAILY, WEEKLY, MONTHLY, YEARLY
+// Valid values for NotificationType: TASK_DUE, EVENT_REMINDER, TASK_ASSIGNED, TASK_COMPLETED, GENERAL
 
 model User {
   id            String         @id @default(cuid())
@@ -58,6 +35,7 @@ model User {
   reminders     Reminder[]
   accounts      Account[]
   sessions      Session[]
+  notificationPreference NotificationPreference?
 
   @@index([email])
 }
@@ -68,12 +46,12 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -129,7 +107,7 @@ model Tag {
 model Schedule {
   id             String          @id @default(cuid())
   title          String
-  description    String?         @db.Text
+  description    String?
   startTime      DateTime
   endTime        DateTime
   allDay         Boolean         @default(false)
@@ -137,7 +115,7 @@ model Schedule {
   userId         String
   categoryId     String?
   isRecurring    Boolean         @default(false)
-  recurrenceType RecurrenceType?
+  recurrenceType String?
   recurrenceEnd  DateTime?
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
@@ -154,10 +132,10 @@ model Schedule {
 model Task {
   id          String       @id @default(cuid())
   title       String
-  description String?      @db.Text
+  description String?
   dueDate     DateTime?
-  priority    TaskPriority @default(MEDIUM)
-  status      TaskStatus   @default(TODO)
+  priority    String @default("MEDIUM")
+  status      String @default("TODO")
   completed   Boolean      @default(false)
   userId      String
   categoryId  String?
@@ -201,9 +179,9 @@ model TimeEntry {
 model Notification {
   id        String           @id @default(cuid())
   userId    String
-  type      NotificationType
+  type      String
   title     String
-  message   String           @db.Text
+  message   String
   read      Boolean          @default(false)
   createdAt DateTime         @default(now())
 
@@ -231,4 +209,18 @@ model Reminder {
   @@index([userId])
   @@index([reminderTime])
   @@index([sent])
+}
+
+model NotificationPreference {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  email     Boolean  @default(true)
+  push      Boolean  @default(false)
+  reminderTiming String @default("1_HOUR")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

@@ -1,37 +1,37 @@
 'use client'
 
-import { signIn } from 'next-auth/react'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Calendar } from 'lucide-react'
 import toast from 'react-hot-toast'
+import axios from 'axios'
+import { signIn } from 'next-auth/react'
 
-export default function SignInPage() {
+export default function SignUpPage() {
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(false)
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        password: '',
+    })
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData({ ...formData, [e.target.id]: e.target.value })
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsLoading(true)
 
         try {
-            const result = await signIn('credentials', {
-                email,
-                password,
-                redirect: false,
-            })
-
-            if (result?.error) {
-                toast.error('Invalid credentials')
-            } else {
-                toast.success('Signed in successfully!')
-                router.push('/dashboard')
-            }
-        } catch (error) {
-            toast.error('Something went wrong')
+            await axios.post('/api/auth/register', formData)
+            toast.success('Account created successfully! Please sign in.')
+            router.push('/auth/signin')
+        } catch (error: any) {
+            const message = error.response?.data?.message || 'Something went wrong'
+            toast.error(message)
         } finally {
             setIsLoading(false)
         }
@@ -55,12 +55,28 @@ export default function SignInPage() {
                         <Calendar className="h-10 w-10 text-primary" />
                         <span className="text-3xl font-bold text-gray-900 dark:text-white">Scheduler</span>
                     </Link>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Welcome back</h1>
-                    <p className="text-gray-600 dark:text-gray-400">Sign in to your account to continue</p>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Create an account</h1>
+                    <p className="text-gray-600 dark:text-gray-400">Join us to organize your life effectively</p>
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
                     <form onSubmit={handleSubmit} className="space-y-6">
+                        <div>
+                            <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Full Name
+                            </label>
+                            <input
+                                id="name"
+                                type="text"
+                                required
+                                value={formData.name}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
+                                placeholder="John Doe"
+                                minLength={2}
+                            />
+                        </div>
+
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Email address
@@ -69,8 +85,8 @@ export default function SignInPage() {
                                 id="email"
                                 type="email"
                                 required
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                value={formData.email}
+                                onChange={handleChange}
                                 className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
                                 placeholder="you@example.com"
                             />
@@ -84,10 +100,11 @@ export default function SignInPage() {
                                 id="password"
                                 type="password"
                                 required
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
+                                value={formData.password}
+                                onChange={handleChange}
                                 className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
                                 placeholder="••••••••"
+                                minLength={6}
                             />
                         </div>
 
@@ -96,7 +113,7 @@ export default function SignInPage() {
                             disabled={isLoading}
                             className="w-full px-4 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 focus:ring-4 focus:ring-primary/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
-                            {isLoading ? 'Signing in...' : 'Sign in'}
+                            {isLoading ? 'Creating account...' : 'Create account'}
                         </button>
                     </form>
 
@@ -106,7 +123,7 @@ export default function SignInPage() {
                                 <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
                             </div>
                             <div className="relative flex justify-center text-sm">
-                                <span className="px-2 bg-white dark:bg-gray-800 text-gray-500">Or continue with</span>
+                                <span className="px-2 bg-white dark:bg-gray-800 text-gray-500">Or sign up with</span>
                             </div>
                         </div>
 
@@ -138,9 +155,9 @@ export default function SignInPage() {
                     </div>
 
                     <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-                        Don't have an account?{' '}
-                        <Link href="/auth/signup" className="text-primary hover:text-primary/90 font-semibold">
-                            Sign up
+                        Already have an account?{' '}
+                        <Link href="/auth/signin" className="text-primary hover:text-primary/90 font-semibold">
+                            Sign in
                         </Link>
                     </p>
                 </div>

@@ -8,19 +8,19 @@ export default function HomePage() {
             <div className="container mx-auto px-4 py-16">
                 <nav className="flex justify-between items-center mb-16">
                     <div className="flex items-center space-x-2">
-                        <Calendar className="h-8 w-8 text-primary-600" />
+                        <Calendar className="h-8 w-8 text-primary" />
                         <span className="text-2xl font-bold text-gray-900 dark:text-white">Scheduler</span>
                     </div>
                     <div className="flex items-center space-x-4">
                         <Link
                             href="/auth/signin"
-                            className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-primary-600 transition-colors"
+                            className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-primary transition-colors"
                         >
                             Sign In
                         </Link>
                         <Link
                             href="/auth/signin"
-                            className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-lg"
+                            className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors shadow-lg"
                         >
                             Get Started
                         </Link>
@@ -31,7 +31,7 @@ export default function HomePage() {
                     <h1 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6 animate-fade-in">
                         Manage Your Time,
                         <br />
-                        <span className="text-primary-600">Achieve Your Goals</span>
+                        <span className="text-primary">Achieve Your Goals</span>
                     </h1>
                     <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 animate-slide-up">
                         A comprehensive scheduling and task management platform with time tracking,
@@ -39,7 +39,7 @@ export default function HomePage() {
                     </p>
                     <Link
                         href="/auth/signin"
-                        className="inline-block px-8 py-4 bg-primary-600 text-white text-lg font-semibold rounded-lg hover:bg-primary-700 transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1"
+                        className="inline-block px-8 py-4 bg-primary text-white text-lg font-semibold rounded-lg hover:bg-primary/90 transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1"
                     >
                         Start Free Today
                     </Link>
@@ -80,14 +80,14 @@ export default function HomePage() {
                 </div>
 
                 {/* CTA Section */}
-                <div className="text-center bg-primary-600 text-white rounded-2xl p-12 shadow-2xl">
+                <div className="text-center bg-primary text-white rounded-2xl p-12 shadow-2xl">
                     <h2 className="text-3xl font-bold mb-4">Ready to boost your productivity?</h2>
                     <p className="text-xl mb-8 opacity-90">
                         Join thousands of users who manage their time effectively with Scheduler.
                     </p>
                     <Link
                         href="/auth/signin"
-                        className="inline-block px-8 py-4 bg-white text-primary-600 text-lg font-semibold rounded-lg hover:bg-gray-100 transition-colors shadow-lg"
+                        className="inline-block px-8 py-4 bg-white text-primary text-lg font-semibold rounded-lg hover:bg-gray-100 transition-colors shadow-lg"
                     >
                         Get Started Now
                     </Link>
@@ -115,7 +115,7 @@ function FeatureCard({
 }) {
     return (
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
-            <div className="text-primary-600 mb-4">{icon}</div>
+            <div className="text-primary mb-4">{icon}</div>
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{title}</h3>
             <p className="text-gray-600 dark:text-gray-300">{description}</p>
         </div>

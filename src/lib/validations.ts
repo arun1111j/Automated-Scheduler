@@ -8,6 +8,7 @@ export const taskSchema = z.object({
     status: z.enum(['TODO', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']).default('TODO'),
     categoryId: z.string().optional(),
     estimatedTime: z.number().int().positive().optional(),
+    completed: z.boolean().default(false),
 })
 
 export const scheduleSchema = z.object({

@@ -2,7 +2,7 @@ import React from 'react';
 import Header from '../../components/Header';
 import Sidebar from '../../components/Sidebar';
 
-const DashboardLayout = ({ children }) => {
+const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     return (
         <div className="dashboard-layout">
             <Header />

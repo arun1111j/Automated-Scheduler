@@ -59,7 +59,7 @@ export async function PATCH(
             data: {
                 ...validatedData,
                 dueDate: validatedData.dueDate ? new Date(validatedData.dueDate) : undefined,
-                completedAt: validatedData.completed ? new Date() : null,
+                completedAt: (validatedData.completed ? new Date() : null) as any,
             },
         })
 

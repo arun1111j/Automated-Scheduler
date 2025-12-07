@@ -73,6 +73,18 @@ export async function GET(request: NextRequest) {
             _count: true,
         })
 
+        // Fetch category names
+        const categoryIds = tasksByCategory
+            .map(t => t.categoryId)
+            .filter((id): id is string => id !== null)
+
+        const categories = await prisma.category.findMany({
+            where: { id: { in: categoryIds } },
+            select: { id: true, name: true }
+        })
+
+        const categoryMap = new Map(categories.map(c => [c.id, c.name]))
+
         const analytics = {
             taskStats: {
                 total: totalTasks,
@@ -95,6 +107,7 @@ export async function GET(request: NextRequest) {
             })),
             tasksByCategory: tasksByCategory.map(item => ({
                 categoryId: item.categoryId,
+                categoryName: item.categoryId ? categoryMap.get(item.categoryId) || 'Unknown' : 'Unassigned',
                 count: item._count,
             })),
         }

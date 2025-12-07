@@ -6,8 +6,11 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import Header from '@/components/Header'
 import Sidebar from '@/components/Sidebar'
-import { Plus, Search, Filter } from 'lucide-react'
+import { Plus, Search, Filter, Edit2, Trash2, MoreVertical } from 'lucide-react'
 import toast from 'react-hot-toast'
+import CreateTaskModal from '@/components/CreateTaskModal'
+import EditTaskModal from '@/components/EditTaskModal'
+import DeleteConfirmModal from '@/components/DeleteConfirmModal'
 
 export default function TasksPage() {
     const { data: session, status } = useSession()
@@ -15,6 +18,10 @@ export default function TasksPage() {
     const [tasks, setTasks] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [filter, setFilter] = useState('all')
+    const [showCreateModal, setShowCreateModal] = useState(false)
+    const [showEditModal, setShowEditModal] = useState(false)
+    const [showDeleteModal, setShowDeleteModal] = useState(false)
+    const [selectedTask, setSelectedTask] = useState<any>(null)
 
     useEffect(() => {
         if (status === 'unauthenticated') {
@@ -52,7 +59,7 @@ export default function TasksPage() {
     if (status === 'loading' || loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
             </div>
         )
     }
@@ -78,15 +85,18 @@ export default function TasksPage() {
                                     key={status}
                                     onClick={() => setFilter(status)}
                                     className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === status
-                                            ? 'bg-primary-600 text-white'
-                                            : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                        ? 'bg-primary text-white'
+                                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                                         }`}
                                 >
                                     {status === 'all' ? 'All' : status.replace('_', ' ')}
                                 </button>
                             ))}
                         </div>
-                        <button className="ml-auto px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center space-x-2">
+                        <button
+                            onClick={() => setShowCreateModal(true)}
+                            className="ml-auto px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center space-x-2"
+                        >
                             <Plus className="h-5 w-5" />
                             <span>New Task</span>
                         </button>
@@ -108,8 +118,8 @@ export default function TasksPage() {
                                             >
                                                 <div
                                                     className={`h-5 w-5 rounded border-2 flex items-center justify-center ${task.completed
-                                                            ? 'bg-primary-600 border-primary-600'
-                                                            : 'border-gray-300 dark:border-gray-600'
+                                                        ? 'bg-primary border-primary'
+                                                        : 'border-gray-300 dark:border-gray-600'
                                                         }`}
                                                 >
                                                     {task.completed && (
@@ -122,8 +132,8 @@ export default function TasksPage() {
                                             <div className="flex-1 min-w-0">
                                                 <h3
                                                     className={`text-sm font-medium ${task.completed
-                                                            ? 'text-gray-500 dark:text-gray-400 line-through'
-                                                            : 'text-gray-900 dark:text-white'
+                                                        ? 'text-gray-500 dark:text-gray-400 line-through'
+                                                        : 'text-gray-900 dark:text-white'
                                                         }`}
                                                 >
                                                     {task.title}
@@ -154,16 +164,40 @@ export default function TasksPage() {
                                             </div>
                                             <span
                                                 className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${task.priority === 'URGENT'
-                                                        ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
-                                                        : task.priority === 'HIGH'
-                                                            ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400'
-                                                            : task.priority === 'MEDIUM'
-                                                                ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
-                                                                : 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
+                                                    ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+                                                    : task.priority === 'HIGH'
+                                                        ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400'
+                                                        : task.priority === 'MEDIUM'
+                                                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
+                                                            : 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
                                                     }`}
                                             >
                                                 {task.priority}
                                             </span>
+
+                                            {/* Action Buttons */}
+                                            <div className="flex items-center space-x-2 ml-4">
+                                                <button
+                                                    onClick={() => {
+                                                        setSelectedTask(task)
+                                                        setShowEditModal(true)
+                                                    }}
+                                                    className="p-2 text-gray-400 hover:text-primary hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                                                    title="Edit task"
+                                                >
+                                                    <Edit2 className="h-4 w-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        setSelectedTask(task)
+                                                        setShowDeleteModal(true)
+                                                    }}
+                                                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                    title="Delete task"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -176,6 +210,32 @@ export default function TasksPage() {
                     </div>
                 </main>
             </div>
+
+            <CreateTaskModal
+                isOpen={showCreateModal}
+                onClose={() => setShowCreateModal(false)}
+                onTaskCreated={fetchTasks}
+            />
+
+            <EditTaskModal
+                isOpen={showEditModal}
+                onClose={() => {
+                    setShowEditModal(false)
+                    setSelectedTask(null)
+                }}
+                onTaskUpdated={fetchTasks}
+                task={selectedTask}
+            />
+
+            <DeleteConfirmModal
+                isOpen={showDeleteModal}
+                onClose={() => {
+                    setShowDeleteModal(false)
+                    setSelectedTask(null)
+                }}
+                onTaskDeleted={fetchTasks}
+                task={selectedTask}
+            />
         </div>
     )
 }

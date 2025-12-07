@@ -1,11 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import GoogleSheetsImportModal from '@/components/GoogleSheetsImportModal'
 import axios from 'axios'
 import { CheckSquare, Clock, Calendar, TrendingUp, AlertCircle } from 'lucide-react'
 import { formatDuration } from '@/lib/utils'
 
 export default function DashboardContent() {
+    const [isImportOpen, setImportOpen] = useState(false);
     const [analytics, setAnalytics] = useState<any>(null)
     const [tasks, setTasks] = useState<any[]>([])
     const [schedules, setSchedules] = useState<any[]>([])
@@ -36,13 +38,14 @@ export default function DashboardContent() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
             </div>
         )
     }
 
     return (
         <div className="lg:ml-64">
+            <button onClick={() => setImportOpen(true)} className="mb-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">Import Google Sheet</button>
             <div className="mb-8">
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
                 <p className="text-gray-600 dark:text-gray-400 mt-1">
@@ -84,7 +87,7 @@ export default function DashboardContent() {
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Pending Tasks</h2>
-                        <a href="/tasks" className="text-primary-600 hover:text-primary-700 text-sm font-medium">
+                        <a href="/tasks" className="text-primary hover:text-primary/90 text-sm font-medium">
                             View all
                         </a>
                     </div>
@@ -110,10 +113,10 @@ export default function DashboardContent() {
                                     </div>
                                     <span
                                         className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${task.priority === 'URGENT'
-                                                ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
-                                                : task.priority === 'HIGH'
-                                                    ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400'
-                                                    : 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
+                                            ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+                                            : task.priority === 'HIGH'
+                                                ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400'
+                                                : 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
                                             }`}
                                     >
                                         {task.priority}
@@ -130,7 +133,7 @@ export default function DashboardContent() {
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Upcoming Events</h2>
-                        <a href="/calendar" className="text-primary-600 hover:text-primary-700 text-sm font-medium">
+                        <a href="/calendar" className="text-primary hover:text-primary/90 text-sm font-medium">
                             View calendar
                         </a>
                     </div>
@@ -141,7 +144,7 @@ export default function DashboardContent() {
                                     key={schedule.id}
                                     className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                                 >
-                                    <Calendar className="h-5 w-5 text-primary-600 flex-shrink-0 mt-1" />
+                                    <Calendar className="h-5 w-5 text-primary flex-shrink-0 mt-1" />
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                                             {schedule.title}
@@ -169,13 +172,13 @@ export default function DashboardContent() {
                                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                     Task Completion Rate
                                 </span>
-                                <span className="text-sm font-semibold text-primary-600">
+                                <span className="text-sm font-semibold text-primary">
                                     {analytics.completionRate.toFixed(1)}%
                                 </span>
                             </div>
                             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                                 <div
-                                    className="bg-primary-600 h-2 rounded-full transition-all"
+                                    className="bg-primary h-2 rounded-full transition-all"
                                     style={{ width: `${analytics.completionRate}%` }}
                                 ></div>
                             </div>
@@ -183,6 +186,7 @@ export default function DashboardContent() {
                     </div>
                 </div>
             )}
+            <GoogleSheetsImportModal isOpen={isImportOpen} onClose={() => setImportOpen(false)} />
         </div>
     )
 }

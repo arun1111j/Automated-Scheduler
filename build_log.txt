@@ -1,0 +1,27 @@
+
+> scheduler-app@2.0.0 build
+> next build
+
+ ⚠ Invalid next.config.js options detected: 
+ ⚠     Expected object, received boolean at "experimental.serverActions"
+ ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+ ⚠ Server Actions are available by default now, `experimental.serverActions` option can be safely removed.
+  ▲ Next.js 14.2.33
+  - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+./src/components/ThemeProvider.tsx:4:41
+Type error: Cannot find module 'next-themes/dist/types' or its corresponding type declarations.
+
+[0m [90m 2 |[39m[0m
+[0m [90m 3 |[39m [36mimport[39m { [33mThemeProvider[39m [36mas[39m [33mNextThemesProvider[39m[33m,[39m useTheme [36mas[39m useNextTheme } [36mfrom[39m [32m'next-themes'[39m[0m
+[0m[31m[1m>[22m[39m[90m 4 |[39m [36mimport[39m { type [33mThemeProviderProps[39m } [36mfrom[39m [32m'next-themes/dist/types'[39m[0m
+[0m [90m   |[39m                                         [31m[1m^[22m[39m[0m
+[0m [90m 5 |[39m [36mimport[39m { useEffect[33m,[39m useState } [36mfrom[39m [32m'react'[39m[0m
+[0m [90m 6 |[39m[0m
+[0m [90m 7 |[39m [36mexport[39m [36mfunction[39m [33mThemeProvider[39m({ children[33m,[39m [33m...[39mprops }[33m:[39m [33mThemeProviderProps[39m) {[0m
+Next.js build worker exited with code: 1 and signal: null

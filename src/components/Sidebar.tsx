@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, CheckSquare, Calendar, Clock, BarChart3, FolderKanban } from 'lucide-react'
+import { LayoutDashboard, CheckSquare, Calendar, Clock, BarChart3, FolderKanban, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navigation = [
@@ -12,6 +12,7 @@ const navigation = [
     { name: 'Time Tracking', href: '/time-tracking', icon: Clock },
     { name: 'Analytics', href: '/analytics', icon: BarChart3 },
     { name: 'Categories', href: '/categories', icon: FolderKanban },
+    { name: 'Settings', href: '/settings/notifications', icon: Settings },
 ]
 
 export default function Sidebar() {
@@ -29,7 +30,7 @@ export default function Sidebar() {
                             className={cn(
                                 'flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors',
                                 isActive
-                                    ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-medium'
+                                    ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary font-medium'
                                     : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                             )}
                         >

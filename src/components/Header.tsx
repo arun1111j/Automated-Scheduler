@@ -39,7 +39,7 @@ export default function Header() {
                 <div className="flex items-center justify-between h-16">
                     {/* Logo */}
                     <Link href="/dashboard" className="flex items-center space-x-2">
-                        <Calendar className="h-8 w-8 text-primary-600" />
+                        <Calendar className="h-8 w-8 text-primary" />
                         <span className="text-xl font-bold text-gray-900 dark:text-white hidden sm:block">
                             Scheduler
                         </span>
@@ -115,7 +115,7 @@ export default function Header() {
                                             className="h-8 w-8 rounded-full"
                                         />
                                     ) : (
-                                        <div className="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center">
+                                        <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
                                             <User className="h-5 w-5 text-white" />
                                         </div>
                                     )}
