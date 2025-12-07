@@ -12,7 +12,7 @@ const navigation = [
     { name: 'Time Tracking', href: '/time-tracking', icon: Clock },
     { name: 'Analytics', href: '/analytics', icon: BarChart3 },
     { name: 'Categories', href: '/categories', icon: FolderKanban },
-    { name: 'Settings', href: '/settings/notifications', icon: Settings },
+    { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
 export default function Sidebar() {
