@@ -1,7 +1,9 @@
+
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { matchAllColumns } from '@/lib/ai/column-matcher'
+import * as XLSX from 'xlsx'
 
 export async function POST(req: NextRequest) {
     try {
@@ -11,10 +13,38 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        const { headers, sampleRows, userMappings } = await req.json()
+        const contentType = req.headers.get('content-type') || ''
 
-        if (!headers || !Array.isArray(headers)) {
-            return NextResponse.json({ error: 'Headers array required' }, { status: 400 })
+        let headers: string[] = []
+        let sampleRows: any[][] = []
+        let userMappings: Record<string, string> = {}
+
+        if (contentType.includes('multipart/form-data')) {
+            const formData = await req.formData()
+            const file = formData.get('file') as File
+
+            if (file) {
+                const buffer = await file.arrayBuffer()
+                const workbook = XLSX.read(buffer, { type: 'array' })
+                const sheetName = workbook.SheetNames[0]
+                const sheet = workbook.Sheets[sheetName]
+                const data = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as any[][]
+
+                if (data.length > 0) {
+                    headers = data[0].map(h => String(h))
+                    sampleRows = data.slice(1, 11) // Take first 10 rows
+                }
+            }
+        } else {
+            // Handle JSON payload (e.g. from URL or direct list)
+            const body = await req.json()
+            headers = body.headers
+            sampleRows = body.sampleRows
+            userMappings = body.userMappings
+        }
+
+        if (!headers || !Array.isArray(headers) || headers.length === 0) {
+            return NextResponse.json({ error: 'No headers found in file' }, { status: 400 })
         }
 
         // Use AI to match columns
@@ -29,6 +59,8 @@ export async function POST(req: NextRequest) {
                 columnMatches,
                 dataAnalysis,
                 suggestions: generateMappingSuggestions(columnMatches),
+                headers, // Return headers for confirmation
+                sampleRows, // Return rows for confirmation state
             },
         })
     } catch (error: any) {

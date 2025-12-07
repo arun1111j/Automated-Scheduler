@@ -51,3 +51,25 @@ export function formatDuration(minutes: number): string {
     if (mins === 0) return `${hours}h`
     return `${hours}h ${mins}m`
 }
+
+export function formatTimeRemaining(dueDate: Date | string): string {
+    const due = new Date(dueDate)
+    const now = new Date()
+    const diffInMs = due.getTime() - now.getTime()
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60))
+    const diffInDays = Math.floor(diffInHours / 24)
+
+    if (diffInMs < 0) {
+        const absHours = Math.abs(diffInHours)
+        const absDays = Math.abs(diffInDays)
+        if (absDays > 0) return `Overdue by ${absDays}d`
+        return `Overdue by ${absHours}h`
+    }
+
+    if (diffInDays < 1) {
+        return `${diffInHours}h left`
+    }
+
+    const remainingHours = diffInHours % 24
+    return `${diffInDays}d ${remainingHours}h left`
+}

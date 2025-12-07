@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useSession } from 'next-auth/react'
@@ -7,10 +8,12 @@ import axios from 'axios'
 import Header from '@/components/Header'
 import Sidebar from '@/components/Sidebar'
 import { Plus, Search, Filter, Edit2, Trash2, MoreVertical } from 'lucide-react'
+import { formatTimeRemaining } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import CreateTaskModal from '@/components/CreateTaskModal'
 import EditTaskModal from '@/components/EditTaskModal'
 import DeleteConfirmModal from '@/components/DeleteConfirmModal'
+import BulkDeleteModal from '@/components/BulkDeleteModal'
 
 export default function TasksPage() {
     const { data: session, status } = useSession()
@@ -22,6 +25,8 @@ export default function TasksPage() {
     const [showEditModal, setShowEditModal] = useState(false)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
     const [selectedTask, setSelectedTask] = useState<any>(null)
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+    const [isDeleteAllOpen, setIsDeleteAllOpen] = useState(false)
 
     useEffect(() => {
         if (status === 'unauthenticated') {
@@ -56,6 +61,31 @@ export default function TasksPage() {
         }
     }
 
+    const toggleSelection = (taskId: string) => {
+        const newSelected = new Set(selectedIds)
+        if (newSelected.has(taskId)) {
+            newSelected.delete(taskId)
+        } else {
+            newSelected.add(taskId)
+        }
+        setSelectedIds(newSelected)
+    }
+
+    const toggleSelectAll = () => {
+        if (selectedIds.size === tasks.length) {
+            setSelectedIds(new Set())
+        } else {
+            setSelectedIds(new Set(tasks.map(t => t.id)))
+        }
+    }
+
+    const handleBulkDeleteSuccess = () => {
+        if (selectedIds.size > 0) {
+            setSelectedIds(new Set())
+        }
+        fetchTasks()
+    }
+
     if (status === 'loading' || loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -77,7 +107,7 @@ export default function TasksPage() {
                         </p>
                     </div>
 
-                    {/* Filters */}
+                    {/* Filters & Actions Header */}
                     <div className="flex flex-wrap items-center gap-4 mb-6">
                         <div className="flex items-center space-x-2">
                             {['all', 'TODO', 'IN_PROGRESS', 'COMPLETED'].map((status) => (
@@ -93,13 +123,36 @@ export default function TasksPage() {
                                 </button>
                             ))}
                         </div>
-                        <button
-                            onClick={() => setShowCreateModal(true)}
-                            className="ml-auto px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center space-x-2"
-                        >
-                            <Plus className="h-5 w-5" />
-                            <span>New Task</span>
-                        </button>
+
+                        <div className="flex items-center space-x-2 ml-auto">
+                            <button
+                                onClick={() => setIsDeleteAllOpen(true)}
+                                className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                title="Bulk Delete Options"
+                            >
+                                <Trash2 className="h-5 w-5" />
+                            </button>
+                            <button
+                                onClick={() => setShowCreateModal(true)}
+                                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center space-x-2"
+                            >
+                                <Plus className="h-5 w-5" />
+                                <span>New Task</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Selection Indicator */}
+                    <div className="flex items-center space-x-2 mb-4 px-1">
+                        <input
+                            type="checkbox"
+                            checked={tasks.length > 0 && selectedIds.size === tasks.length}
+                            onChange={toggleSelectAll}
+                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                        />
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                            Select All ({selectedIds.size} selected)
+                        </span>
                     </div>
 
                     {/* Tasks List */}
@@ -112,6 +165,14 @@ export default function TasksPage() {
                                         className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                                     >
                                         <div className="flex items-start space-x-4">
+                                            <div className="flex items-center h-full pt-1">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedIds.has(task.id)}
+                                                    onChange={() => toggleSelection(task.id)}
+                                                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                                />
+                                            </div>
                                             <button
                                                 onClick={() => toggleTaskComplete(task.id, task.completed)}
                                                 className="flex-shrink-0 mt-1"
@@ -145,9 +206,17 @@ export default function TasksPage() {
                                                 )}
                                                 <div className="flex items-center space-x-4 mt-2">
                                                     {task.dueDate && (
-                                                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                            Due: {new Date(task.dueDate).toLocaleDateString()}
-                                                        </span>
+                                                        <div className="flex items-center space-x-2">
+                                                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                                Due: {new Date(task.dueDate).toLocaleDateString()}
+                                                            </span>
+                                                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${formatTimeRemaining(task.dueDate).includes('Overdue')
+                                                                ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                                                : 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
+                                                                }`}>
+                                                                {formatTimeRemaining(task.dueDate)}
+                                                            </span>
+                                                        </div>
                                                     )}
                                                     {task.category && (
                                                         <span
@@ -160,6 +229,14 @@ export default function TasksPage() {
                                                             {task.category.name}
                                                         </span>
                                                     )}
+                                                    {task.tags && task.tags.map((tag: any) => (
+                                                        <span
+                                                            key={tag.id}
+                                                            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+                                                        >
+                                                            {tag.name}
+                                                        </span>
+                                                    ))}
                                                 </div>
                                             </div>
                                             <span
@@ -235,6 +312,14 @@ export default function TasksPage() {
                 }}
                 onTaskDeleted={fetchTasks}
                 task={selectedTask}
+            />
+
+            <BulkDeleteModal
+                isOpen={isDeleteAllOpen}
+                onClose={() => setIsDeleteAllOpen(false)}
+                onSuccess={handleBulkDeleteSuccess}
+                selectedCount={selectedIds.size}
+                ids={Array.from(selectedIds)}
             />
         </div>
     )

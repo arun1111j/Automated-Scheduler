@@ -9,7 +9,6 @@ const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Tasks', href: '/tasks', icon: CheckSquare },
     { name: 'Calendar', href: '/calendar', icon: Calendar },
-    { name: 'Time Tracking', href: '/time-tracking', icon: Clock },
     { name: 'Analytics', href: '/analytics', icon: BarChart3 },
     { name: 'Categories', href: '/categories', icon: FolderKanban },
     { name: 'Settings', href: '/settings', icon: Settings },

@@ -1,19 +1,20 @@
+
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
 import Header from '@/components/Header'
 import Sidebar from '@/components/Sidebar'
-import { Calendar, dateFnsLocalizer, Event } from 'react-big-calendar'
-import withDragAndDrop, { withDragAndDropProps } from 'react-big-calendar/lib/addons/dragAndDrop'
-import format from 'date-fns/format'
-import parse from 'date-fns/parse'
-import startOfWeek from 'date-fns/startOfWeek'
-import getDay from 'date-fns/getDay'
-import enUS from 'date-fns/locale/en-US'
+import { Calendar, dateFnsLocalizer, Event, Views, View } from 'react-big-calendar'
+import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop'
+import { format, parse, startOfWeek, getDay } from 'date-fns'
+import { enUS } from 'date-fns/locale'
 import axios from 'axios'
 import toast from 'react-hot-toast'
 import EditTaskModal from '@/components/EditTaskModal'
-import { Task } from '@prisma/client' // Type definition might need adjustment if not available directly
+import CreateTaskModal from '@/components/CreateTaskModal'
+import CustomToolbar from '@/components/CustomToolbar'
+import { Task } from '@prisma/client'
+import { formatTimeRemaining } from '@/lib/utils'
 
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css'
@@ -44,8 +45,17 @@ interface CalendarEvent extends Event {
 export default function CalendarPage() {
     const [events, setEvents] = useState<CalendarEvent[]>([])
     const [selectedTask, setSelectedTask] = useState<any>(null)
-    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null)
     const [loading, setLoading] = useState(true)
+
+    // Controlled state for calendar
+    const [view, setView] = useState<View>(Views.MONTH)
+    const [date, setDate] = useState(new Date())
+
+    const onNavigate = useCallback((newDate: Date) => setDate(newDate), [])
+    const onView = useCallback((newView: View) => setView(newView), [])
 
     const fetchTasks = useCallback(async () => {
         try {
@@ -56,7 +66,7 @@ export default function CalendarPage() {
                 .filter((task: any) => task.dueDate)
                 .map((task: any) => ({
                     id: task.id,
-                    title: task.title,
+                    title: `${task.title} (${formatTimeRemaining(task.dueDate)})`,
                     start: new Date(task.dueDate),
                     end: new Date(task.dueDate), // Default to same day for now
                     allDay: true,
@@ -97,11 +107,16 @@ export default function CalendarPage() {
         }
     }
 
-    const handleSelectEvent = (event: CalendarEvent) => {
+    const handleSelectEvent = (event: any) => {
         if (event.resource) {
             setSelectedTask(event.resource)
-            setIsModalOpen(true)
+            setIsEditModalOpen(true)
         }
+    }
+
+    const handleSelectSlot = ({ start }: { start: Date }) => {
+        setSelectedDate(start)
+        setIsCreateModalOpen(true)
     }
 
     return (
@@ -116,14 +131,25 @@ export default function CalendarPage() {
                         <DnDCalendar
                             localizer={localizer}
                             events={events}
-                            startAccessor="start"
-                            endAccessor="end"
-                            draggableAccessor={(event) => true}
+                            // Controlled props
+                            date={date}
+                            view={view}
+                            onNavigate={onNavigate}
+                            onView={onView}
+                            // Accessors
+                            startAccessor={(event: any) => new Date(event.start)}
+                            endAccessor={(event: any) => new Date(event.end)}
+                            draggableAccessor={(event: any) => true}
                             onEventDrop={onEventDrop}
                             onSelectEvent={handleSelectEvent}
-                            resizable={false} // Task due dates usually don't have end times in this app yet
-                            defaultView="month"
+                            onSelectSlot={handleSelectSlot}
+                            selectable
+                            longPressThreshold={10}
+                            resizable={false}
                             views={['month', 'week', 'day', 'agenda']}
+                            components={{
+                                toolbar: CustomToolbar,
+                            }}
                             className="text-gray-900 dark:text-gray-200"
                         />
                     </div>
@@ -131,10 +157,17 @@ export default function CalendarPage() {
             </div>
 
             <EditTaskModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
                 onTaskUpdated={fetchTasks}
                 task={selectedTask}
+            />
+
+            <CreateTaskModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onTaskCreated={fetchTasks}
+                initialDate={selectedDate}
             />
         </div>
     )

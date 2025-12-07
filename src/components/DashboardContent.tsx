@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react'
 import GoogleSheetsImportModal from '@/components/GoogleSheetsImportModal'
 import axios from 'axios'
-import { CheckSquare, Clock, Calendar, TrendingUp, AlertCircle } from 'lucide-react'
-import { formatDuration } from '@/lib/utils'
+import { CheckSquare, Calendar, TrendingUp, AlertCircle } from 'lucide-react'
+import { formatDuration, formatTimeRemaining } from '@/lib/utils'
 
 export default function DashboardContent() {
     const [isImportOpen, setImportOpen] = useState(false);
@@ -67,12 +67,7 @@ export default function DashboardContent() {
                     icon={<CheckSquare className="h-6 w-6" />}
                     color="green"
                 />
-                <StatCard
-                    title="Time Today"
-                    value={formatDuration(analytics?.timeStats?.todayMinutes || 0)}
-                    icon={<Clock className="h-6 w-6" />}
-                    color="purple"
-                />
+
                 <StatCard
                     title="Upcoming Events"
                     value={analytics?.upcomingEvents || 0}
@@ -86,7 +81,7 @@ export default function DashboardContent() {
                 {/* Pending Tasks */}
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Pending Tasks</h2>
+                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Upcoming Deadlines</h2>
                         <a href="/tasks" className="text-primary hover:text-primary/90 text-sm font-medium">
                             View all
                         </a>
@@ -106,9 +101,17 @@ export default function DashboardContent() {
                                             {task.title}
                                         </p>
                                         {task.dueDate && (
-                                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                                Due: {new Date(task.dueDate).toLocaleDateString()}
-                                            </p>
+                                            <div className="mt-1 flex items-center space-x-2">
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                    Due: {new Date(task.dueDate).toLocaleDateString()}
+                                                </p>
+                                                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${formatTimeRemaining(task.dueDate).includes('Overdue')
+                                                    ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                                    : 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
+                                                    }`}>
+                                                    {formatTimeRemaining(task.dueDate)}
+                                                </span>
+                                            </div>
                                         )}
                                     </div>
                                     <span
@@ -186,7 +189,7 @@ export default function DashboardContent() {
                     </div>
                 </div>
             )}
-            <GoogleSheetsImportModal isOpen={isImportOpen} onClose={() => setImportOpen(false)} />
+            <GoogleSheetsImportModal isOpen={isImportOpen} onClose={() => setImportOpen(false)} onSuccess={fetchData} />
         </div>
     )
 }

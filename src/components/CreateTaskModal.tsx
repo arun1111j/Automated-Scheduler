@@ -1,6 +1,7 @@
+
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { X } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -9,14 +10,30 @@ interface CreateTaskModalProps {
     isOpen: boolean
     onClose: () => void
     onTaskCreated: () => void
+    initialDate?: Date | null
 }
 
-export default function CreateTaskModal({ isOpen, onClose, onTaskCreated }: CreateTaskModalProps) {
+export default function CreateTaskModal({ isOpen, onClose, onTaskCreated, initialDate }: CreateTaskModalProps) {
     const [title, setTitle] = useState('')
     const [description, setDescription] = useState('')
     const [dueDate, setDueDate] = useState('')
     const [priority, setPriority] = useState('MEDIUM')
     const [loading, setLoading] = useState(false)
+
+    // Reset or set initial date when modal opens
+    useEffect(() => {
+        if (isOpen) {
+            if (initialDate) {
+                // Format nicely for input type="date" (YYYY-MM-DD)
+                const yyyy = initialDate.getFullYear()
+                const mm = String(initialDate.getMonth() + 1).padStart(2, '0')
+                const dd = String(initialDate.getDate()).padStart(2, '0')
+                setDueDate(`${yyyy}-${mm}-${dd}`)
+            } else {
+                setDueDate('')
+            }
+        }
+    }, [isOpen, initialDate])
 
     if (!isOpen) return null
 
